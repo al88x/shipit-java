@@ -1,7 +1,7 @@
 package com.softwire.training.shipit.dao;
 
-public class StockAlteration
-{
+public class StockAlteration {
+
     private int productId;
     private int quantity;
 

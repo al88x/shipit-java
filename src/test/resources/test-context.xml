@@ -57,9 +57,9 @@
     <bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource">
         <property name="driverClassName" value="com.mysql.jdbc.Driver"/>
 
-        <property name="url" value="jdbc:mysql://localhost:3306/shipit_testdb"/>
+        <property name="url" value="jdbc:mysql://localhost:3306/shipit-test"/>
         <property name="username" value="root"/>
-        <property name="password" value="mysql"/>
+        <property name="password" value="rootadmin"/>
 
         <property name="initialSize" value="3"/>
         <property name="maxActive" value="10"/>

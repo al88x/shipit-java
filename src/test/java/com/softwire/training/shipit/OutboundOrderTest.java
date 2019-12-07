@@ -18,8 +18,7 @@ import org.springframework.mock.web.MockHttpServletResponse;
 import java.util.Arrays;
 import java.util.Collections;
 
-public class OutboundOrderTest extends AbstractBaseTest
-{
+public class OutboundOrderTest extends AbstractBaseTest {
     private static final Employee EMPLOYEE = new EmployeeBuilder().createEmployee();
     private static final int WAREHOUSE_ID = EMPLOYEE.getWarehouseId();
 
@@ -28,13 +27,11 @@ public class OutboundOrderTest extends AbstractBaseTest
 
     private OutboundOrderController outboundOrderController;
 
-    public void setOutboundOrderController(OutboundOrderController outboundOrderController)
-    {
+    public void setOutboundOrderController(OutboundOrderController outboundOrderController) {
         this.outboundOrderController = outboundOrderController;
     }
 
-    public void onSetUp() throws Exception
-    {
+    public void onSetUp() throws Exception {
         super.onSetUp();
         employeeDAO.addEmployees(Collections.singletonList(EMPLOYEE));
         product = new ProductBuilder().createProduct();
@@ -43,8 +40,7 @@ public class OutboundOrderTest extends AbstractBaseTest
         companyDAO.addCompanies(Collections.singletonList(new CompanyBuilder().createCompany()));
     }
 
-    public void testParseOutboundOrder() throws Exception
-    {
+    public void testParseOutboundOrder() throws Exception {
         String xml = "<outboundOrder>" +
                 "<warehouseId>2</warehouseId>" +
                 "<orderLines>" +
@@ -57,24 +53,26 @@ public class OutboundOrderTest extends AbstractBaseTest
                 new OrderLine("43294842", 723412))));
     }
 
-    public void testOutboundOrder() throws Exception
-    {
+    public void testOutboundOrder() throws Exception {
         stockDAO.addStock(WAREHOUSE_ID,
                 Collections.singletonList(new StockAlteration(product.getId(), 10)));
-        MockHttpServletRequest request = createPostRequest("<outboundOrder>" +
-                "<warehouseId>1</warehouseId>" +
-                "<orderLines>" +
-                "<orderLine><gtin>" + gtin + "</gtin><quantity>3</quantity></orderLine>" +
-                "</orderLines>" +
-                "</outboundOrder>");
+        MockHttpServletRequest request = createPostRequest(
+                "<outboundOrder>" +
+                            "<warehouseId>1</warehouseId>" +
+                            "<orderLines>" +
+                                "<orderLine>" +
+                                    "<gtin>" + gtin + "</gtin>" +
+                                    "<quantity>3</quantity>" +
+                                "</orderLine>" +
+                            "</orderLines>" +
+                        "</outboundOrder>");
 
         assertEmptySuccessResponse(outboundOrderController.handleRequest(request, new MockHttpServletResponse()));
 
         assertEquals(stockDAO.getStock(1, product.getId()).getHeld(), 7);
     }
 
-    public void testOutboundOrderInsufficientStock() throws Exception
-    {
+    public void testOutboundOrderInsufficientStock() throws Exception {
         stockDAO.addStock(EMPLOYEE.getWarehouseId(),
                 Collections.singletonList(new StockAlteration(product.getId(), 10)));
         MockHttpServletRequest request = createPostRequest("<outboundOrder>" +
@@ -84,21 +82,17 @@ public class OutboundOrderTest extends AbstractBaseTest
                 "</orderLines>" +
                 "</outboundOrder>");
 
-        try
-        {
+        try {
             outboundOrderController.handleRequest(request, new MockHttpServletResponse());
             fail("Expected exception to be thrown");
-        }
-        catch (InsufficientStockException e)
-        {
+        } catch (InsufficientStockException e) {
             // Do nothing
         }
 
         assertEquals(stockDAO.getStock(WAREHOUSE_ID, product.getId()).getHeld(), 10);
     }
 
-    public void testOutboundOrderStockNotHeld() throws Exception
-    {
+    public void testOutboundOrderStockNotHeld() throws Exception {
         MockHttpServletRequest request = createPostRequest("<outboundOrder>" +
                 "<warehouseId>1</warehouseId>" +
                 "<orderLines>" +
@@ -106,21 +100,17 @@ public class OutboundOrderTest extends AbstractBaseTest
                 "</orderLines>" +
                 "</outboundOrder>");
 
-        try
-        {
+        try {
             outboundOrderController.handleRequest(request, new MockHttpServletResponse());
             fail("Expected exception to be thrown");
-        }
-        catch (InsufficientStockException e)
-        {
+        } catch (InsufficientStockException e) {
             assertTrue(e.getMessage().contains("no stock held"));
         }
 
         assertNull(stockDAO.getStock(WAREHOUSE_ID, product.getId()));
     }
 
-    public void testOutboundOrderBadGtin() throws Exception
-    {
+    public void testOutboundOrderBadGtin() throws Exception {
         MockHttpServletRequest request = createPostRequest("<outboundOrder>" +
                 "<warehouseId>1</warehouseId>" +
                 "<orderLines>" +
@@ -128,19 +118,15 @@ public class OutboundOrderTest extends AbstractBaseTest
                 "</orderLines>" +
                 "</outboundOrder>");
 
-        try
-        {
+        try {
             outboundOrderController.handleRequest(request, new MockHttpServletResponse());
             fail("Expected exception to be thrown");
-        }
-        catch (NoSuchEntityException e)
-        {
+        } catch (NoSuchEntityException e) {
             assertTrue(e.getMessage().contains("987654321"));
         }
     }
 
-    public void testOutboundOrderDuplicateGtins() throws Exception
-    {
+    public void testOutboundOrderDuplicateGtins() throws Exception {
         stockDAO.addStock(EMPLOYEE.getWarehouseId(),
                 Collections.singletonList(new StockAlteration(product.getId(), 10)));
         MockHttpServletRequest request = createPostRequest("<outboundOrder>" +
@@ -151,13 +137,10 @@ public class OutboundOrderTest extends AbstractBaseTest
                 "</orderLines>" +
                 "</outboundOrder>");
 
-        try
-        {
+        try {
             outboundOrderController.handleRequest(request, new MockHttpServletResponse());
             fail("Expected exception to be thrown");
-        }
-        catch (ValidationException e)
-        {
+        } catch (ValidationException e) {
             assertTrue(e.getMessage().contains(gtin));
         }
     }
