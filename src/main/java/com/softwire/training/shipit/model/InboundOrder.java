@@ -4,6 +4,7 @@ import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class InboundOrder implements RenderableAsXML
@@ -12,11 +13,19 @@ public class InboundOrder implements RenderableAsXML
     private List<OrderSegment> segments;
     private Employee operationsManager;
 
+    public InboundOrder() {
+        segments = new ArrayList<OrderSegment>();
+    }
+
     public InboundOrder(int warehouseId, List<OrderSegment> segments, Employee operationsManager)
     {
         this.warehouseId = warehouseId;
         this.segments = segments;
         this.operationsManager = operationsManager;
+    }
+
+    public void addOrderSegment(OrderSegment orderSegment){
+        segments.add(orderSegment);
     }
 
     public int getWarehouseId()

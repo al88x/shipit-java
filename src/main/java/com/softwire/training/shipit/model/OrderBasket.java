@@ -9,7 +9,14 @@ import java.util.Map;
 
 public class OrderBasket {
 
+//    private class Order {
+//        private Product product;
+//        private int quantity;
+//    }
+
     private int warehouseId;
+//    private List<Order> orders;
+
     private Map<String, StockAlteration> lineItems;
     private List<Integer> productIds;
 

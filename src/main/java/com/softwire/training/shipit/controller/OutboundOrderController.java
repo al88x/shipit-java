@@ -38,7 +38,6 @@ public class OutboundOrderController extends BaseController {
     }
 
 
-
     protected RenderableAsXML handlePostMethod(Element documentElement, HttpServletRequest request,
                                                HttpServletResponse response) throws Exception {
 
@@ -55,7 +54,7 @@ public class OutboundOrderController extends BaseController {
         try {
             if (isStockAvailable(orderBasket)) {
                 stockDAO.removeStock(orderBasket.getWarehouseId(), orderBasket.getListOfLineItems());
-                truckManifest = buildTruckManifest(outboundOrder.getWarehouseId(), products, orderBasket.getListOfLineItems());
+                truckManifest = buildTruckManifest(orderBasket, products);
                 transactionManager.commit(txStatus);
             }
         } catch (Exception e) {
@@ -118,9 +117,9 @@ public class OutboundOrderController extends BaseController {
         return productDAO.getProductsByGtin(gtins);
     }
 
-    private TruckManifest buildTruckManifest(int warehouseId, Map<String, Product> products, List<StockAlteration> lineItems) {
+    private TruckManifest buildTruckManifest(OrderBasket orderBasket, Map<String, Product> products) {
         TruckManifest truckManifest = new TruckManifest();
-        for (StockAlteration lineItem : lineItems) {
+        for (StockAlteration lineItem : orderBasket.getLineItems().values()) {
             Product product = getProductFromMap(products, lineItem.getProductId());
             if (product == null) {
                 product = productDAO.getProduct(lineItem.getProductId());
@@ -129,7 +128,7 @@ public class OutboundOrderController extends BaseController {
                     lineItem.getQuantity(), product.getWeight()));
 
         }
-        truckManifest.setWarehouseId(warehouseId);
+        truckManifest.setWarehouseId(orderBasket.getWarehouseId());
         truckManifest.buildManifest();
         return truckManifest;
     }

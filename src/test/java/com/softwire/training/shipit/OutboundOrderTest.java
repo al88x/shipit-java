@@ -12,8 +12,10 @@ import com.softwire.training.shipit.model.Employee;
 import com.softwire.training.shipit.model.OrderLine;
 import com.softwire.training.shipit.model.OutboundOrder;
 import com.softwire.training.shipit.model.Product;
+import com.softwire.training.shipit.model.truck.TruckManifest;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
+import org.springframework.web.servlet.ModelAndView;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -54,22 +56,29 @@ public class OutboundOrderTest extends AbstractBaseTest {
     }
 
     public void testOutboundOrder() throws Exception {
+        System.err.println(product.getGtin());
+        System.err.println(product.getWeight());
         stockDAO.addStock(WAREHOUSE_ID,
-                Collections.singletonList(new StockAlteration(product.getId(), 10)));
+                Collections.singletonList(new StockAlteration(product.getId(), 10000)));
         MockHttpServletRequest request = createPostRequest(
                 "<outboundOrder>" +
                             "<warehouseId>1</warehouseId>" +
                             "<orderLines>" +
                                 "<orderLine>" +
                                     "<gtin>" + gtin + "</gtin>" +
-                                    "<quantity>3</quantity>" +
+                                    "<quantity>10000</quantity>" +
                                 "</orderLine>" +
                             "</orderLines>" +
                         "</outboundOrder>");
 
-        assertEmptySuccessResponse(outboundOrderController.handleRequest(request, new MockHttpServletResponse()));
+        String output = "<TruckManifest><warehouseId>1</warehouseId><NumberOfTrucks>2</NumberOfTrucks><Trucks><Truck><TotalWeight>1999.8 kg</TotalWeight><OutboundOrderLines><OrderLine><gtin>0000346374230</gtin><name>2 Count 1 T30 Torx Bit Tips TX</name><quantity>6666</quantity><totalWeightOfOrder>1999.8 kg</totalWeightOfOrder></OrderLine></OutboundOrderLine></Truck><Truck><TotalWeight>1000.2 kg</TotalWeight><OutboundOrderLines><OrderLine><gtin>0000346374230</gtin><name>2 Count 1 T30 Torx Bit Tips TX</name><quantity>3334</quantity><totalWeightOfOrder>1000.2 kg</totalWeightOfOrder></OrderLine></OutboundOrderLine></Truck></Trucks></TruckManifest>";
 
-        assertEquals(stockDAO.getStock(1, product.getId()).getHeld(), 7);
+
+        TruckManifest truckManifest = assertSuccessResponseAndReturnContent(outboundOrderController.handleRequest(request, new MockHttpServletResponse()), TruckManifest.class);
+        String truckManifestString = truckManifest.renderXML();
+        assertEquals(truckManifestString, output);
+
+        assertEquals(stockDAO.getStock(1, product.getId()).getHeld(), 0);
     }
 
     public void testOutboundOrderInsufficientStock() throws Exception {
